@@ -1,10 +1,10 @@
 # Segmentación Dinámica
- Este proyecto seguirá La metodología CRISP-DM la cuál establece seis fases que definen el ciclo de vida de un proyecto. A continuación se enuncian cada una de las fases y sus principales tareas en el marco del proyecto.
+ Este proyecto seguirá la metodología CRISP-DM la cuál establece seis fases que definen el ciclo de vida de un proyecto. A continuación se enuncian cada una de las fases y sus principales tareas en el marco del proyecto.
  
  # Compresión del negocio:
  En esta fase  se busca entender y definir el problema que resuelve la segmentación dinámica, para establecer los objetivos y el plan de acción.
  
- Actualmente los métodos de segmentación clasifican a los usuarios  en grupos de acuerdo a determinadas caracteristicas de interes de cada negocio, en donde la variables demograficas son las principalmente utilizadas. Sin embargo, los cambios comportacionales en las personas son constantes y estos en su gran parte definen sus gustos y preferencias para un momento o periodo de tiempo. COn la segmentación dinámica se busca capturar estos cambios en las personas pero obtener una clasificación acorde con los objetivos del negocio y las preferencias de las personas, de tal forma que el negocio pueda crear estrategias diferenciadas para el cliente que sean acordes con sus  actuales preferencias.
+ Actualmente los métodos de segmentación clasifican a los usuarios  en grupos de acuerdo a determinadas caracteristicas de interes de cada negocio, en donde la variables demograficas son las principalmente utilizadas. Sin embargo, los cambios comportacionales en las personas son constantes y estos en su gran parte definen sus gustos y preferencias para un momento o periodo de tiempo. Con la segmentación dinámica se busca capturar estos cambios en las personas pero obtener una clasificación acorde con los objetivos del negocio y las preferencias de las personas, de tal forma que el negocio pueda crear estrategias diferenciadas para el cliente que sean acordes con sus  actuales preferencias.
  
  # Estudio y comprensión de los datos
  
