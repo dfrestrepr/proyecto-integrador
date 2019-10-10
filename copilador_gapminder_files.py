@@ -6,10 +6,9 @@ PATH='/home/david/Descargas/Gapminder data/'
 files = os.listdir(PATH)
 
 data = pd.DataFrame()
-cont = 1
 for item in files:
     if item.endswith('.csv'):
-        print('Archivo:', item, 'número:', cont)
+        print('Archivo:', item)
         temp = pd.read_csv(PATH+item)
         temp = temp.melt(id_vars='country', var_name="Date",
                 value_name=item.split('csv')[0])
