@@ -8,8 +8,8 @@ Created on Tue Oct 15 19:20:05 2019
 import logging
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 from scipy.spatial import distance
-
 #%%
 logger = logging.getLogger(__name__)
 #%%
@@ -47,3 +47,29 @@ def outlier_detection_mahal(X,alpha = 0.95):
     logger.info('Deteccion de outliers exitoso')
     return outliers
 
+
+### Esta funcion toma como entrada un dataframe con el conjunto de datos, la
+### etiqueta de 1s y 0s, y realiza un stepwise en la regresion logistica para
+### conservar las variables mas relevantes para explicar la etiqueta. La
+### funcion devuelve una lista con las variables relevantes, y el modelo final
+### de la regresion logistica
+def stepwise_logistic(X,Y,alpha =0.1):
+    
+    try:
+        n = len(X.columns)
+        for i in range(n):
+            model = sm.Logit(Y, X).fit()
+            pvalues = pd.DataFrame(model.pvalues,columns = ['pvalues']).reset_index()
+            if pvalues['pvalues'].max()<alpha:
+                break
+            to_drop = pvalues[pvalues['pvalues']==pvalues['pvalues'].max()]['index'].values[0]
+            X = X.drop(columns = to_drop)
+    
+        model = sm.Logit(Y, X).fit()
+        variables_relevantes = list(X.columns) 
+    except Exception as e:
+        logger.info(f'Error en el stepwise logistic:{e}')
+        model = None
+        variables_relevantes = []
+        
+    return variables_relevantes,model
