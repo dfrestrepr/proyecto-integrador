@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from scipy.spatial import distance
+from sklearn.covariance import LedoitWolf
 #%%
 logger = logging.getLogger(__name__)
 #%%
@@ -73,3 +74,16 @@ def stepwise_logistic(X,Y,alpha =0.1):
         variables_relevantes = []
         
     return variables_relevantes,model
+
+
+### Esta funcion calcula la matriz de covarianza de Ledoit and Wolf, retorna
+### la matriz de covarianza despues de aplicar el metodo de Shrinkage, ademas
+### de retornar la media estimada. Esta funcion toma como parametros de entrada
+### el conjunto de datos
+def LedoitWolf_covMatrix(X):
+    
+    cov = LedoitWolf().fit(X)
+    cov_matrix = cov.covariance_
+    mean_vector = cov.location_
+    
+    return cov_matrix, mean_vector
