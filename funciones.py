@@ -11,6 +11,7 @@ import pandas as pd
 import statsmodels.api as sm
 from scipy.spatial import distance
 from sklearn.covariance import LedoitWolf
+from sklearn.tree import ExtraTreeClassifier
 #%%
 logger = logging.getLogger(__name__)
 #%%
@@ -75,6 +76,40 @@ def stepwise_logistic(X,Y,alpha =0.1):
         
     return variables_relevantes,model
 
+
+### Se construye la funcion de variables relevantes utilizando metodos de
+### arboles. Esta funcion entrena un arbol para el conjunto de datos y
+### retorna las variables mas relevantes para explicar la variable Y. Hay
+### que tener en cuenta que esta funcion toma como entrada DataFrames, donde
+### para la variable X, las columnas tienen los nombres de las variables.
+def variables_relevantes_arbol(X,Y,alpha = None):
+    
+    if len(X)==0:
+        logger.info("No se ingreso informacion de variables")
+        return []
+    
+    features = list(X.columns)
+    
+    if alpha == None:
+        alpha = 1.0/len(features)
+        logger.info(f'Se calcula el valor minimo de aceptacion de importancia: {alpha}')
+    
+    try:    
+        model = ExtraTreeClassifier()
+        model.fit(X,Y)
+        
+        importance = model.feature_importances_
+        
+        relevant_features = []
+        for i in range(len(features)):
+            if importance[i]>alpha:
+                relevant_features.append(features[i])
+                
+    except Exception as e:
+        logger.info(f'Error con el metodo de arboles, no se determinaron variables relevantes: {e}')
+        relevant_features = []
+        
+    return relevant_features
 
 ### Esta funcion calcula la matriz de covarianza de Ledoit and Wolf, retorna
 ### la matriz de covarianza despues de aplicar el metodo de Shrinkage, ademas
