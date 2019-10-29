@@ -122,3 +122,70 @@ def LedoitWolf_covMatrix(X):
     mean_vector = cov.location_
     
     return cov_matrix, mean_vector
+
+
+### Funcion de distancia p
+def distancia(a,b, p):
+    ## if p = 0, que use la de mahalanobis (aun no esta programada)
+    
+    ### por ahora, la cuadratica
+    return np.linalg.norm(a-b, p)
+
+
+### Inicializa los centroides para el metodo de kmeans, inicializa de forma
+### aleatoria tantos centros como clusters
+def init_centroids(X_data,k):
+    
+    centroids = []
+    numdata = len(X_data)
+    for i in range(k):
+        centroids.append(X_data[np.random.randint(0, numdata)])
+        
+    return centroids
+
+### Metodo de kmeans
+def kmeans(X_data,k,numiter,centroids,p_dista = 2,etiquetas = []):
+
+    numdata = len(X_data)    
+    if len(etiquetas)==0:
+         ### Etiquetas actuales de cada elemento para cada cluster
+        etiquetas = np.ones(numdata)*-1   ### Inicialmente, ningun elemento esta asignado
+    
+    ### Grados de pertenencia a cada cluster
+    grados_pertenencia = []
+        
+    
+    ### Ahora empiezo las iteraciones
+    for it in range(numiter):
+        
+        ### En cada iteracion, itero para todos los elementos
+        for element in range(numdata):
+            
+            ### Evaluo las distancias a cada centroides
+            distc = []
+            for c in centroids:
+                distc.append(distancia(X_data[element], c, p_dista))
+            
+            ### Encuentro el centroide al que tiene menor distancia
+            nearest_centroid = np.argmin(distc)
+            
+            ### Asigno el elemento a este cluster
+            etiquetas[element] = nearest_centroid
+            
+            ### Grados de pertenencia a cada cluster
+            grados_pertenencia.append(str(list(np.around(1/(distc/sum(distc))/sum(1/(distc/sum(distc))),3))))
+            
+            ### Recalculo el centroide 
+            centroids[nearest_centroid] = np.mean(X_data[np.where(etiquetas==nearest_centroid)], axis=0)   
+        
+        centroids = np.array(centroids)
+    return grados_pertenencia,etiquetas,centroids
+
+
+
+
+
+
+
+
+

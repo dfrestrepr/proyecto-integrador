@@ -4,11 +4,10 @@ Created on Sun Oct 13 10:38:34 2019
 
 @author: nicol
 """
-
 #### Version propia de kmeans para proyecto integrador
 import numpy as np
 import pandas as pd
-
+import funciones
 
 ### Leemos los datos 
 datos = pd.read_csv('outputs/data_gapminder_proc.csv')
@@ -25,13 +24,6 @@ datos_e = datos_e.fillna(0)
 ### Fijar seed aleatoria
 np.random.seed(1)
 
-
-
-
-
-
-
-
 ##### Inicio tomando los del primer year
 year_i = 2012   ### Year inicial a considerar
 X_data_df = datos_e[datos_e['Date']==year_i].reset_index(drop=True)
@@ -41,65 +33,16 @@ X_data = np.array(X_data_df[X_data_df.columns[2:]])
 
 ## Numero de observaciones en cada periodo
 numdata = len(X_data)
+  
 
-
-
-### Funcion de distancia p
-def distancia(a,b, p):
-    ## if p = 0, que use la de mahalanobis (aun no esta programada)
-    
-    ### por ahora, la cuadratica
-    return np.linalg.norm(a-b, p)
-    
-
-### La p para la distancia que usare
+### Define cantidad de clusters, numero maximo de iteraciones, y la distancia
+### que se utilizara en el metodo de kmeans
+k=3
+numiter = 5
 p_dista = 2
 
-
-############# El numero de clusters sera
-k=3
-
-
-### Inicialmente, asignar 3 puntos de forma aleatoria como centroides
-centroids = X_data[[np.random.randint(0, numdata), np.random.randint(0, numdata), np.random.randint(0, numdata)]]
-
-
-
-### Numero de iteraciones del k means
-numiter = 5
-
-### Etiquetas actuales de cada elemento para cada cluster
-etiquetas = np.ones(numdata)*-1   ### Inicialmente, ningun elemento esta asignado
-
-### Grados de pertenencia a cada cluster
-grados_pertenencia = []
-    
-
-### Ahora empiezo las iteraciones
-for it in range(numiter):
-    
-    ### En cada iteracion, itero para todos los elementos
-    for el in range(numdata):
-        
-        ### Evaluo las distancias a cada centroides
-        distc = []
-        for c in centroids:
-            distc.append(distancia(X_data[el], c, p_dista))
-        
-        ### Encuentro el centroide al que tiene menor distancia
-        nearest_centroid = np.argmin(distc)
-        
-        ### Asigno el elemento a este cluster
-        etiquetas[el] = nearest_centroid
-        
-        ### Grados de pertenencia a cada cluster
-        grados_pertenencia.append(str(list(np.around(1/(distc/sum(distc))/sum(1/(distc/sum(distc))),3))))
-        
-        ### Recalculo el centroide 
-        centroids[nearest_centroid] = np.mean(X_data[np.where(etiquetas==nearest_centroid)], axis=0)
-            
-            
-        
+centroids = funciones.init_centroids(X_data,k)
+grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data,k,numiter,centroids,p_dista = p_dista)
 
 
 
@@ -152,9 +95,6 @@ output_file('outputs/ClustersGenerados/cluster_inicial_'+str(year_i)+'.html')
 save(p)
 
 
-
-
-
 #################### Ahora, empiezo a iterar para t >=2
 
 ### Numero de periodos que incluire en el estudio, sin incluir el inicial
@@ -180,34 +120,11 @@ for periodos in range(periodos_incluir):
     etiquetas_prev = etiquetas.copy()
 #    etiquetas = np.ones(numdata)*-1   ### Inicialmente, ningun elemento esta asignado
     
-    ### Grados de pertenencia a cada cluster
-    grados_pertenencia = []
-    
-    ### Ahora empiezo las iteraciones
-    for it in range(numiter):
-        
-        ### En cada iteracion, itero para todos los elementos
-        for el in range(numdata):
-            
-            ### Evaluo las distancias a cada centroides
-            distc = []
-            for c in centroids:
-                distc.append(distancia(X_data[el], c, p_dista))
-            
-            ### Encuentro el centroide al que tiene menor distancia
-            nearest_centroid = np.argmin(distc)
-            
-            ### Asigno el elemento a este cluster
-            etiquetas[el] = nearest_centroid
-            
-            ### Grados de pertenencia a cada cluster
-            grados_pertenencia.append(str(list(np.around(1/(distc/sum(distc))/sum(1/(distc/sum(distc))),3))))
-            
-            ### Recalculo el centroide 
-            centroids[nearest_centroid] = np.mean(X_data[np.where(etiquetas==nearest_centroid)], axis=0)
+    grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data,k,numiter,
+                                                              centroids,
+                                                              p_dista = p_dista,
+                                                              etiquetas = etiquetas)
                 
-                
-
     ########### Plotting
     
     ### Consolido en listas las x, las y y las demas variables que vere para cada punto
