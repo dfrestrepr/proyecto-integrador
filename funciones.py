@@ -173,7 +173,7 @@ def kmeans(X_data,k,numiter,centroids,p_dista = 2,etiquetas = []):
             etiquetas[element] = nearest_centroid
             
             ### Grados de pertenencia a cada cluster
-            grados_pertenencia.append(str(list(np.around(1/(distc/sum(distc))/sum(1/(distc/sum(distc))),3))))
+            grados_pertenencia.append(str(list(np.around(1/(distc/sum(distc))/sum(1/(distc/sum(distc))),k))))
             
             ### Recalculo el centroide 
             centroids[nearest_centroid] = np.mean(X_data[np.where(etiquetas==nearest_centroid)], axis=0)   

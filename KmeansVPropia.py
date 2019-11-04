@@ -13,13 +13,21 @@ import funciones
 datos = pd.read_csv('outputs/data_gapminder_proc.csv')
 
 ### Por ahora, dejamos solo nombre pais y year, y dos variables explicativas
-datos = datos[datos.columns[[0,1,4,6]]]  
+datos = datos[datos.columns[[0,1,3,4,5,6]]]  
 
 ### Estandarizo todos los datos
 from sklearn.preprocessing import StandardScaler
 datos_e = datos.copy()
 datos_e[datos_e.columns[2:]] = StandardScaler().fit_transform(datos_e[datos_e.columns[2:]])
 datos_e = datos_e.fillna(0)
+
+#### Aplicarle PCA a todos los datos
+from sklearn.decomposition import PCA
+pca = PCA(n_components=2)
+datos_pca = pca.fit_transform(datos_e[datos_e.columns[2:]])
+
+
+
 
 ### Fijar seed aleatoria
 np.random.seed(1)
@@ -30,6 +38,9 @@ X_data_df = datos_e[datos_e['Date']==year_i].reset_index(drop=True)
 X_data = np.array(X_data_df[X_data_df.columns[2:]])
 
 
+### Los que usare para el PCA seran
+X_data_pca = np.array(datos_pca[datos_e['Date']==year_i])
+
 
 ## Numero de observaciones en cada periodo
 numdata = len(X_data)
@@ -37,11 +48,16 @@ numdata = len(X_data)
 
 ### Define cantidad de clusters, numero maximo de iteraciones, y la distancia
 ### que se utilizara en el metodo de kmeans
-k=3
+k=5
 numiter = 5
 p_dista = 2
 
+
+#### Inicializar los centroides
 centroids = funciones.init_centroids(X_data,k)
+centroids_pca = pca.transform(centroids)
+
+### Aplicar kmeans
 grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data,k,numiter,centroids,p_dista = p_dista)
 
 
@@ -57,8 +73,8 @@ colores = ['blue', 'yellow', 'red', 'green', 'orange', 'purple']
 
 
 ### Consolido en listas las x, las y y las demas variables que vere para cada punto
-list_x = X_data[:,0]
-list_y = X_data[:,1]
+list_x = X_data_pca[:,0]
+list_y = X_data_pca[:,1]
 list_pais = X_data_df['country'].values
 grados_pertenencia = np.array(grados_pertenencia)
 
@@ -83,8 +99,7 @@ for i in range(k):
 
 
 ### Ploteo centroides
-p.square(centroids[:,0], centroids[:,1], size=15, 
-         fill_color='black')
+#p.square(centroids_pca[:,0], centroids_pca[:,1], size=15,    fill_color='black')
 
 ### Labels
 p.xaxis.axis_label = datos.columns[-2]
@@ -110,6 +125,10 @@ for periodos in range(periodos_incluir):
     ### Los datos para este year ya serian
     X_data_df = datos_e[datos_e['Date']==year_i+1+periodos].reset_index(drop=True)
     X_data = np.array(X_data_df[X_data_df.columns[2:]])
+
+    #### Obtener los 2 componentes principales de los datos para plotear estos
+    X_data_pca = np.array(datos_pca[datos_e['Date']==year_i+1+periodos])
+
     
     ### Calulo los cambios en las variables
     cambios_variables = X_data_viej - X_data    
@@ -124,12 +143,16 @@ for periodos in range(periodos_incluir):
                                                               centroids,
                                                               p_dista = p_dista,
                                                               etiquetas = etiquetas)
-                
+
+    ### PCA de los centroides
+    centroids_pca = pca.transform(centroids)                
+    
+    
     ########### Plotting
     
     ### Consolido en listas las x, las y y las demas variables que vere para cada punto
-    list_x = X_data[:,0]
-    list_y = X_data[:,1]
+    list_x = X_data_pca[:,0]
+    list_y = X_data_pca[:,1]
     list_xv = cambios_variables[:,0]
     list_yv = cambios_variables[:,1]
     list_pais = X_data_df['country'].values
@@ -162,8 +185,8 @@ for periodos in range(periodos_incluir):
 
     ### PLoteo los elementos de cada conjunto que cambiaron de cluster
     
-    ### Listaas para los elementos que cambiaron de cluster
-    X_data_cambios = X_data[etiquetas_cambios]
+    ### Listas para los elementos que cambiaron de cluster
+    X_data_cambios = X_data_pca[etiquetas_cambios]
     list_x = X_data_cambios[:,0]
     list_y = X_data_cambios[:,1]
     list_xv = cambios_variables[:,0]
@@ -183,15 +206,14 @@ for periodos in range(periodos_incluir):
     
     ### Listas para centroiodes
     cambios_centroids = centroids_viej - centroids
-    list_x = centroids[:,0]
-    list_y = centroids[:,1]
+    list_x = centroids_pca[:,0]
+    list_y = centroids_pca[:,1]
     list_xv = cambios_centroids[:,0]
     list_yv = cambios_centroids[:,1]
 
     # Plotar centroids    
     source = ColumnDataSource(data={'x':list_x, 'y':list_y, 'xv':list_xv, 'yv': list_yv})
-    p.square('x','y', size=15, 
-             fill_color='black',source=source)
+#    p.square('x','y', size=15,             fill_color='black',source=source)
     
     ### Labels de la grafica
     p.xaxis.axis_label = datos.columns[-2]
