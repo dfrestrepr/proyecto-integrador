@@ -48,7 +48,7 @@ numdata = len(X_data)
 
 ### Define cantidad de clusters, numero maximo de iteraciones, y la distancia
 ### que se utilizara en el metodo de kmeans
-k=5
+k = 4
 numiter = 5
 p_dista = 2
 
@@ -57,8 +57,43 @@ p_dista = 2
 centroids = funciones.init_centroids(X_data,k)
 centroids_pca = pca.transform(centroids)
 
+### Para la fase 2 de las importancias
+centroids_p = centroids.copy()
+
 ### Aplicar kmeans
 grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data,k,numiter,centroids,p_dista = p_dista)
+
+
+
+######### Variable global donde ire guardando la importancia de las variables en cada iteracion
+imp_iters = []
+
+
+### Obtener la importancia de las variables de cada cluster (de mayor a menor)
+importancias_cluster = []
+### Para cada cluster
+for clu in range(k):
+    ### Dejo solo las observaciones de cada cluster
+    datax_i = pd.DataFrame(X_data)
+    datay_i = etiquetas.copy()
+    #### Solo clasifico binario si si pertence o no a cada cluster
+    distintos_cluster = np.where(datay_i!=clu)
+    ### Lo que no pertenece al cluster, lo pongo en -1
+    datay_i[distintos_cluster] = -1
+    datay_i = pd.DataFrame(datay_i)
+    
+    
+    ### Calcular relevancias
+    relevancias = funciones.variables_relevantes_arbol(datax_i, datay_i, 0)
+    
+    importancias_cluster.append(relevancias)
+
+##### Calculo los promedios de importancia de cada variable
+imp_clus_prom =  np.mean(importancias_cluster, axis=0)
+
+### Guardo las importancias de esta iteracion
+imp_iters.append(imp_clus_prom)
+
 
 
 
@@ -101,9 +136,12 @@ for i in range(k):
 ### Ploteo centroides
 #p.square(centroids_pca[:,0], centroids_pca[:,1], size=15,    fill_color='black')
 
-### Labels
-p.xaxis.axis_label = datos.columns[-2]
-p.yaxis.axis_label = datos.columns[-1]
+### Labels (componentes principales)
+p.xaxis.axis_label = 'Componente principal 1'
+p.yaxis.axis_label = 'Componente principal 2'
+#p.xaxis.axis_label = datos.columns[-2]
+#p.yaxis.axis_label = datos.columns[-1]
+
 
 ### Guardo el resultado
 output_file('outputs/ClustersGenerados/cluster_inicial_'+str(year_i)+'.html')
@@ -128,27 +166,98 @@ for periodos in range(periodos_incluir):
 
     #### Obtener los 2 componentes principales de los datos para plotear estos
     X_data_pca = np.array(datos_pca[datos_e['Date']==year_i+1+periodos])
-
     
     ### Calulo los cambios en las variables
     cambios_variables = X_data_viej - X_data    
     
 
+
+
+    ################## Ponderacion dinamica
+    ######## Pondero X_data
+    X_data_ori = X_data.copy()  ### X data original (sin ponderacion)
     
+    
+    ### Obtengo la importancia promedio de cada variable (promedio de todas las iteraciones)
+    importancia_prom = np.mean(imp_iters, axis=0)
+    
+    #### Rankeo las variables de menor a mayor importancia
+    rank_variables = np.argsort(importancia_prom)
+    rankpeso_variables = np.zeros(len(rank_variables))
+    cont = 0
+    for i in rank_variables:
+        rankpeso_variables[i] = (cont+1)/len(rank_variables)
+        cont= cont+1
+
+    #### Usar rankings o usar los promedios para el peso
+    peso_variables = importancia_prom.copy()
+#    peso_variables = rankpeso_variables.copy()
+
+    
+    ### Escalo entonces la X para cambiar los pesos (segun las importancias)
+    X_data_pond = X_data.copy()
+    for peso in range(len(peso_variables)):
+        X_data_pond[:,peso] = X_data_pond[:,peso] * peso_variables[peso]
+
+
+
+
+    ############ K means para los plots
     ### Etiquetas actuales de cada elemento para cada cluster
     etiquetas_prev = etiquetas.copy()
-#    etiquetas = np.ones(numdata)*-1   ### Inicialmente, ningun elemento esta asignado
     
-    grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data,k,numiter,
+    ######### Clusters con k means ponderado
+    grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data_pond,k,numiter,
                                                               centroids,
                                                               p_dista = p_dista,
                                                               etiquetas = etiquetas)
 
-    ### PCA de los centroides
-    centroids_pca = pca.transform(centroids)                
+
+
+
+
+
+
+
+    ################# K means para la seleccion de variables
+    ###### Para la proxima iteracion, los pesos
+    grados_pertenencia_p,etiquetas_p,centroids_p = funciones.kmeans(X_data_ori,k,numiter,
+                                                              centroids_p,
+                                                              p_dista = p_dista,
+                                                              etiquetas = etiquetas)
+    ### Obtener la importancia de las variables de cada cluster (de mayor a menor)
+    importancias_cluster = []
+    ### Para cada cluster
+    for clu in range(k):
+        ### Dejo solo las observaciones de cada cluster
+        datax_i = pd.DataFrame(X_data_ori)
+        datay_i = etiquetas_p.copy()
+        #### Solo clasifico binario si si pertence o no a cada cluster
+        distintos_cluster = np.where(datay_i!=clu)
+        ### Lo que no pertenece al cluster, lo pongo en -1
+        datay_i[distintos_cluster] = -1
+        datay_i = pd.DataFrame(datay_i)
+        
+        
+        ### Calcular relevancias
+        relevancias = funciones.variables_relevantes_arbol(datax_i, datay_i, 0)
+        
+        importancias_cluster.append(relevancias)
+    
+    ##### Calculo los promedios de importancia de cada variable
+    imp_clus_prom =  np.mean(importancias_cluster, axis=0)
+    
+    ### Guardo las importancias de esta iteracion
+    imp_iters.append(imp_clus_prom)
+
+
+
+
+
+
     
     
-    ########### Plotting
+    ###################### Plotting
     
     ### Consolido en listas las x, las y y las demas variables que vere para cada punto
     list_x = X_data_pca[:,0]
@@ -215,9 +324,11 @@ for periodos in range(periodos_incluir):
     source = ColumnDataSource(data={'x':list_x, 'y':list_y, 'xv':list_xv, 'yv': list_yv})
 #    p.square('x','y', size=15,             fill_color='black',source=source)
     
-    ### Labels de la grafica
-    p.xaxis.axis_label = datos.columns[-2]
-    p.yaxis.axis_label = datos.columns[-1]
+    ### Labels de la grafica (componentes principales)
+    p.xaxis.axis_label = 'Componente principal 1'
+    p.yaxis.axis_label = 'Componente principal 2'
+    #p.xaxis.axis_label = datos.columns[-2]
+    #p.yaxis.axis_label = datos.columns[-1]
     
     
     ### Guardar resultados

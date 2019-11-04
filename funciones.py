@@ -109,6 +109,7 @@ def variables_relevantes_arbol(X,Y,alpha = None):
         logger.info(f'Error con el metodo de arboles, no se determinaron variables relevantes: {e}')
         relevant_features = []
         
+    return importance
     return relevant_features
 
 ### Esta funcion calcula la matriz de covarianza de Ledoit and Wolf, retorna
@@ -161,11 +162,14 @@ def kmeans(X_data,k,numiter,centroids,p_dista = 2,etiquetas = []):
         ### En cada iteracion, itero para todos los elementos
         for element in range(numdata):
             
+            np.seterr(all='raise')
             ### Evaluo las distancias a cada centroides
+            ### le sumo 0.00001 a cada distancia para evitar division sobre cero
             distc = []
             for c in centroids:
-                distc.append(distancia(X_data[element], c, p_dista))
+                distc.append(distancia(X_data[element], c, p_dista)+0.00001)
             
+
             ### Encuentro el centroide al que tiene menor distancia
             nearest_centroid = np.argmin(distc)
             
@@ -173,7 +177,9 @@ def kmeans(X_data,k,numiter,centroids,p_dista = 2,etiquetas = []):
             etiquetas[element] = nearest_centroid
             
             ### Grados de pertenencia a cada cluster
-            grados_pertenencia.append(str(list(np.around(1/(distc/sum(distc))/sum(1/(distc/sum(distc))),k))))
+            grados_pert = str(list(np.around(1/(distc/sum(distc))/sum(1/(distc/sum(distc))),4)))
+            grados_pertenencia.append(grados_pert)
+
             
             ### Recalculo el centroide 
             centroids[nearest_centroid] = np.mean(X_data[np.where(etiquetas==nearest_centroid)], axis=0)   
