@@ -4,10 +4,39 @@ Created on Sun Oct 13 10:38:34 2019
 
 @author: nicol
 """
-#### Version propia de kmeans para proyecto integrador
+#%%
+import os
+import funciones
 import numpy as np
 import pandas as pd
-import funciones
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+#%%
+from bokeh.plotting import figure
+from bokeh.io import output_file, save
+from bokeh.models import ColumnDataSource, HoverTool, BoxZoomTool, WheelZoomTool, ResetTool, PanTool
+#%%
+file_path = os.path.dirname(os.path.abspath(__file__))
+#%% 
+### Configuracion del logger
+import logging
+from logging.handlers import RotatingFileHandler
+
+file_name = 'Segmentacion_dinamica_'
+logger = logging.getLogger()
+dir_log = os.path.join(file_path, f'logs/{file_name}.log')
+
+if not os.path.exists('logs'):
+    os.mkdir('logs')
+
+handler = RotatingFileHandler(dir_log, maxBytes=2000000, backupCount=10)
+logging.basicConfig(level=logging.DEBUG,
+                    format="%(asctime)s - %(process)d - %(name)s - %(levelname)s - %(message)s",
+                    handlers = [handler])
+#%%
+logger.info('*'*80)
+logger.info('Inicia ejecucion del programa')
+#### Version propia de kmeans para proyecto integrador
 
 ### Leemos los datos 
 datos = pd.read_csv('outputs/data_gapminder_proc.csv')
@@ -15,18 +44,19 @@ datos = pd.read_csv('outputs/data_gapminder_proc.csv')
 ### Por ahora, dejamos solo nombre pais y year, y dos variables explicativas
 datos = datos[datos.columns[[0,1,3,4,5,6]]]  
 
+
+datos = funciones.data_preprocessing(datos, alpha_outlier_detection =0.98, 
+                                     columns_not_numeric = {'country','Date'},
+                                     column_id = 'country')
+
 ### Estandarizo todos los datos
-from sklearn.preprocessing import StandardScaler
 datos_e = datos.copy()
 datos_e[datos_e.columns[2:]] = StandardScaler().fit_transform(datos_e[datos_e.columns[2:]])
 datos_e = datos_e.fillna(0)
 
 #### Aplicarle PCA a todos los datos
-from sklearn.decomposition import PCA
 pca = PCA(n_components=2)
 datos_pca = pca.fit_transform(datos_e[datos_e.columns[2:]])
-
-
 
 
 ### Fijar seed aleatoria
@@ -34,12 +64,13 @@ np.random.seed(1)
 
 ##### Inicio tomando los del primer year
 year_i = 2012   ### Year inicial a considerar
-X_data_df = datos_e[datos_e['Date']==year_i].reset_index(drop=True)
+filtro = datos_e['Date']==year_i
+X_data_df = datos_e[filtro].reset_index(drop=True)
 X_data = np.array(X_data_df[X_data_df.columns[2:]])
 
 
 ### Los que usare para el PCA seran
-X_data_pca = np.array(datos_pca[datos_e['Date']==year_i])
+X_data_pca = np.array(datos_pca[filtro])
 
 
 ## Numero de observaciones en cada periodo
@@ -61,11 +92,13 @@ centroids_pca = pca.transform(centroids)
 centroids_p = centroids.copy()
 
 ### Aplicar kmeans
-grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data,k,numiter,centroids,p_dista = p_dista)
+grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data,k,numiter,
+                                                          centroids,p_dista = p_dista)
 
 
 
-######### Variable global donde ire guardando la importancia de las variables en cada iteracion
+### Variable global donde ire guardando la importancia de las variables en cada 
+### iteracion
 imp_iters = []
 
 
@@ -98,10 +131,6 @@ imp_iters.append(imp_clus_prom)
 
 
 #PLotear con hover tool
-from bokeh.io import output_file, save
-from bokeh.models import ColumnDataSource, HoverTool, BoxZoomTool, WheelZoomTool, ResetTool, PanTool
-from bokeh.plotting import figure
-
 
 ### Colores a usar para cada cluster
 colores = ['blue', 'yellow', 'red', 'green', 'orange', 'purple']
@@ -171,8 +200,6 @@ for periodos in range(periodos_incluir):
     cambios_variables = X_data_viej - X_data    
     
 
-
-
     ################## Ponderacion dinamica
     ######## Pondero X_data
     X_data_ori = X_data.copy()  ### X data original (sin ponderacion)
@@ -200,8 +227,6 @@ for periodos in range(periodos_incluir):
         X_data_pond[:,peso] = X_data_pond[:,peso] * peso_variables[peso]
 
 
-
-
     ############ K means para los plots
     ### Etiquetas actuales de cada elemento para cada cluster
     etiquetas_prev = etiquetas.copy()
@@ -211,11 +236,6 @@ for periodos in range(periodos_incluir):
                                                               centroids,
                                                               p_dista = p_dista,
                                                               etiquetas = etiquetas)
-
-
-
-
-
 
 
 
@@ -252,12 +272,9 @@ for periodos in range(periodos_incluir):
 
 
 
-
-
-
-    
-    
-    ###################### Plotting
+    ###########################################################################
+    ################################ Plotting #################################
+    ########################################################################### 
     
     ### Consolido en listas las x, las y y las demas variables que vere para cada punto
     list_x = X_data_pca[:,0]
@@ -279,11 +296,21 @@ for periodos in range(periodos_incluir):
 
     
     ### Crear la figura
-    p = figure(plot_width=700, plot_height=500, tools=[hover, PanTool(), ResetTool(), BoxZoomTool(), WheelZoomTool()], title=str(year_i+1+periodos))
+    p = figure(plot_width=700, plot_height=500, tools=[hover, PanTool(), 
+                                                       ResetTool(), 
+                                                       BoxZoomTool(), 
+                                                       WheelZoomTool()],
+                                                 title=str(year_i+1+periodos))
     
     ### PLoteo cada conjunto
     for i in range(k):
-        source = ColumnDataSource(data={'x':list_x[np.where(etiquetas==i)], 'y':list_y[np.where(etiquetas==i)], 'xv':list_xv[np.where(etiquetas==i)], 'yv': list_yv[np.where(etiquetas==i)],'pais':list_pais[np.where(etiquetas==i)],'grados_p':grados_pertenencia[np.where(etiquetas==i)],'cluster_id':etiquetas[np.where(etiquetas==i)]})
+        source = ColumnDataSource(data={'x':list_x[np.where(etiquetas==i)], 
+                                        'y':list_y[np.where(etiquetas==i)], 
+                                        'xv':list_xv[np.where(etiquetas==i)], 
+                                        'yv': list_yv[np.where(etiquetas==i)],
+                                        'pais':list_pais[np.where(etiquetas==i)],
+                                        'grados_p':grados_pertenencia[np.where(etiquetas==i)],
+                                        'cluster_id':etiquetas[np.where(etiquetas==i)]})
         p.circle('x','y', size=12, 
                  fill_color=colores[i], source=source)
 
