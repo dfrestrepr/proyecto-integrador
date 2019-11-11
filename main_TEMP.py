@@ -100,7 +100,7 @@ centroids_pca = pca.transform(centroids)
 centroids_p = centroids.copy()
 
 ### Aplicar kmeans
-grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data,k,numiter,
+grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data,numiter,
                                                           centroids,p_dista = p_dista)
 
 
@@ -131,7 +131,7 @@ for clu in range(k):
     
     
     ### Calcular relevancias
-    relevancias = funciones.variables_relevantes_arbol(datax_i, datay_i, 0)
+    relevancias, _ = funciones.variables_relevantes_arbol(datax_i, datay_i, 0)
     
     importancias_cluster.append(relevancias)
 
@@ -246,7 +246,7 @@ for periodos in range(periodos_incluir):
     etiquetas_prev = etiquetas.copy()
     
     ######### Clusters con k means ponderado
-    grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data_pond,k,numiter,
+    grados_pertenencia,etiquetas,centroids = funciones.kmeans(X_data_pond,numiter,
                                                               centroids,
                                                               p_dista = p_dista,
                                                               etiquetas = etiquetas)
@@ -261,7 +261,7 @@ for periodos in range(periodos_incluir):
 
     ################# K means para la seleccion de variables
     ###### Para la proxima iteracion, los pesos
-    grados_pertenencia_p,etiquetas_p,centroids_p = funciones.kmeans(X_data_ori,k,numiter,
+    grados_pertenencia_p,etiquetas_p,centroids_p = funciones.kmeans(X_data_ori,numiter,
                                                               centroids_p,
                                                               p_dista = p_dista,
                                                               etiquetas = etiquetas)
@@ -280,7 +280,7 @@ for periodos in range(periodos_incluir):
         
         
         ### Calcular relevancias
-        relevancias = funciones.variables_relevantes_arbol(datax_i, datay_i, 0)
+        relevancias, _ = funciones.variables_relevantes_arbol(datax_i, datay_i, 0)
         
         importancias_cluster.append(relevancias)
     
@@ -383,7 +383,6 @@ for periodos in range(periodos_incluir):
     save(p)
 
                
-    
     
     
     

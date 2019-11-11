@@ -108,8 +108,7 @@ def variables_relevantes_arbol(X,Y,alpha = None):
         logger.info('Error con el metodo de arboles, no se determinaron variables relevantes: {0}'.format(e))
         relevant_features = []
         
-    return importance
-    return relevant_features
+    return importance, relevant_features
 
 ### Esta funcion toma como entrada un dataframe, el nombre de las variables no
 ### numericas, el nombre de la columna identificadora de los registros (ID del
@@ -207,7 +206,7 @@ def init_centroids(X_data,k):
     return centroids
 
 ### Metodo de kmeans
-def kmeans(X_data,k,numiter,centroids,p_dista = 2,etiquetas = [], shrinkage = True):
+def kmeans(X_data,numiter,centroids,p_dista = 2,etiquetas = [], shrinkage = True):
     logger.info('Inicializa el metodo de kmeans')
     numdata = len(X_data)    
     if len(etiquetas)==0:
@@ -267,3 +266,46 @@ def kmeans(X_data,k,numiter,centroids,p_dista = 2,etiquetas = [], shrinkage = Tr
     logger.info('Fin del algoritmo kmeans')
     return grados_pertenencia,etiquetas,centroids
 
+#def plot_clusters_bokeh(list_x,list_y,list_pais,grados_pertenencia,title = 'Title',to_save = True):
+#
+#    ### Plotear con hover tool
+#    
+#    ### Colores a usar para cada cluster
+#    colores = ['blue', 'yellow', 'red', 'green', 'orange', 'purple']
+#
+#    
+#    ### Creo la herramienta de hover tool
+#    hover = HoverTool(tooltips=[
+#        ("pais","@pais"),
+#        ("index", "$index"),
+#        ("(x,y)", "(@x, @y)"),
+#        ("cluster_id", "@cluster_id"),
+#        ("Pertenencia_clusters", "@grados_p"),
+#        ])
+#
+#    ### Creo la figura
+#    p = figure(plot_width=700, plot_height=500, tools=[hover, PanTool(), 
+#                                                       ResetTool(), BoxZoomTool(), 
+#                                                       WheelZoomTool()], title=title)
+#    
+#    ### PLoteo cada cluster
+#    for i in range(k):
+#        source = ColumnDataSource(data={'x':list_x[np.where(etiquetas==i)], 'y':list_y[np.where(etiquetas==i)], 'pais':list_pais[np.where(etiquetas==i)],'grados_p':grados_pertenencia[np.where(etiquetas==i)],'cluster_id':etiquetas[np.where(etiquetas==i)]})
+#        p.circle('x','y', size=12, 
+#                 fill_color=colores[i], source=source)
+#
+#    ### Ploteo centroides
+#    #p.square(centroids_pca[:,0], centroids_pca[:,1], size=15,    fill_color='black')
+#    
+#    ### Labels (componentes principales)
+#    p.xaxis.axis_label = 'Componente principal 1'
+#    p.yaxis.axis_label = 'Componente principal 2'
+#    #p.xaxis.axis_label = datos.columns[-2]
+#    #p.yaxis.axis_label = datos.columns[-1]
+#    
+#    if to_save:
+#    ### Guardo el resultado
+#        output_file('outputs/ClustersGenerados/cluster_inicial_'+title+'.html')
+#        save(p)
+#    
+#    return None
