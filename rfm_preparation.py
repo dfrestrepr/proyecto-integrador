@@ -169,7 +169,7 @@ grados_pertenencia = np.array(grados_pertenencia)
 
 ### Creo la herramienta de hover tool
 hover = HoverTool(tooltips=[
-    ("pais", "@pais"),
+    ("cliente", "@cliente"),
     ("index", "$index"),
     ("(x,y)", "(@x, @y)"),
     ("cluster_id", "@cluster_id"),
@@ -201,7 +201,7 @@ p.yaxis.axis_label = 'Componente principal 2'
 
 
 ### Guardo el resultado
-output_file('/home/' + str(year_i) + '.html')
+output_file('/home/david/proyecto-integrador/outputs/rfm_' + str(year_i) + '.html')
 save(p)
 
 #################### Ahora, empiezo a iterar para t >=2
@@ -303,7 +303,7 @@ for periodos in range(periodos_incluir):
 
     ### Hover tool para los datos
     hover = HoverTool(tooltips=[
-        ("pais", "@pais"),
+        ("cliente", "@cliente"),
         ("index", "$index"),
         ("(x,y)", "(@x, @y)"),
         ("(Cambio_x,Cambio_y)", "(@xv, @yv)"),
@@ -324,7 +324,7 @@ for periodos in range(periodos_incluir):
                                         'y': list_y[np.where(etiquetas == i)],
                                         'xv': list_xv[np.where(etiquetas == i)],
                                         'yv': list_yv[np.where(etiquetas == i)],
-                                        'pais': list_pais[np.where(etiquetas == i)],
+                                        'cliente': list_pais[np.where(etiquetas == i)],
                                         'grados_p': grados_pertenencia[np.where(etiquetas == i)],
                                         'cluster_id': etiquetas[np.where(etiquetas == i)]})
         p.circle('x', 'y', size=12,
@@ -349,7 +349,7 @@ for periodos in range(periodos_incluir):
     for i in range(k):
         source = ColumnDataSource(data={'x': list_x[np.where(etiqs == i)], 'y': list_y[np.where(etiqs == i)],
                                         'xv': list_xv[np.where(etiqs == i)], 'yv': list_yv[np.where(etiqs == i)],
-                                        'pais': list_pais[np.where(etiqs == i)],
+                                        'cliente': list_pais[np.where(etiqs == i)],
                                         'grados_p': grados_pertenencia[np.where(etiqs == i)],
                                         'cluster_id': etiqs[np.where(etiqs == i)]})
         p.square('x', 'y', size=6,
@@ -375,6 +375,6 @@ for periodos in range(periodos_incluir):
     # p.yaxis.axis_label = datos.columns[-1]
 
     ### Guardar resultados
-    output_file('/home/' + str(year_i + 1 + periodos) + '.html')
+    output_file('/home/david/proyecto-integrador/outputs/rfm_' + str(year_i + 1 + periodos) + '.html')
     save(p)
 
