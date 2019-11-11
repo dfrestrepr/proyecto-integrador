@@ -142,57 +142,16 @@ imp_clus_prom =  np.mean(importancias_cluster, axis=0)
 imp_iters.append(imp_clus_prom)
 
 
-
-
-#PLotear con hover tool
-
-### Colores a usar para cada cluster
-colores = ['blue', 'yellow', 'red', 'green', 'orange', 'purple']
-
-
 ### Consolido en listas las x, las y y las demas variables que vere para cada punto
 list_x = X_data_pca[:,0]
 list_y = X_data_pca[:,1]
 list_pais = X_data_df['country'].values
 grados_pertenencia = np.array(grados_pertenencia)
 
-### Creo la herramienta de hover tool
-hover = HoverTool(tooltips=[
-    ("pais","@pais"),
-    ("index", "$index"),
-    ("(x,y)", "(@x, @y)"),
-    ("cluster_id", "@cluster_id"),
-    ("Pertenencia_clusters", "@grados_p"),
-
-])
-
-### Creo la figura
-p = figure(plot_width=700, plot_height=500, tools=[hover, PanTool(), ResetTool(), BoxZoomTool(), WheelZoomTool()], title=str(year_i))
-
-### PLoteo cada cluster
-for i in range(k):
-    source = ColumnDataSource(data={'x':list_x[np.where(etiquetas==i)], 'y':list_y[np.where(etiquetas==i)], 'pais':list_pais[np.where(etiquetas==i)],'grados_p':grados_pertenencia[np.where(etiquetas==i)],'cluster_id':etiquetas[np.where(etiquetas==i)]})
-    p.circle('x','y', size=12, 
-             fill_color=colores[i], source=source)
-
-
-### Ploteo centroides
-#p.square(centroids_pca[:,0], centroids_pca[:,1], size=15,    fill_color='black')
-
-### Labels (componentes principales)
-p.xaxis.axis_label = 'Componente principal 1'
-p.yaxis.axis_label = 'Componente principal 2'
-#p.xaxis.axis_label = datos.columns[-2]
-#p.yaxis.axis_label = datos.columns[-1]
-
-
-### Guardo el resultado
-output_file('outputs/ClustersGenerados/cluster_inicial_'+str(year_i)+'.html')
-save(p)
-
+funciones.plot_clusters_bokeh(list_x, list_y, list_pais, k, etiquetas, 
+                              grados_pertenencia,title = str(year_i),to_save = True)
 
 #################### Ahora, empiezo a iterar para t >=2
-
 ### Numero de periodos que incluire en el estudio, sin incluir el inicial
 periodos_incluir = 4
 
@@ -304,100 +263,16 @@ for periodos in range(periodos_incluir):
     list_pais = X_data_df['country'].values
     grados_pertenencia = np.array(grados_pertenencia)
 
-    ### Hover tool para los datos
-    hover = HoverTool(tooltips=[
-                ("pais","@pais"),
-        ("index", "$index"),
-        ("(x,y)", "(@x, @y)"),
-        ("(Cambio_x,Cambio_y)", "(@xv, @yv)"),    
-    ("cluster_id", "@cluster_id"),
-    ("Pertenencia_clusters", "@grados_p"),
-    ])
 
-    
-    ### Crear la figura
-    p = figure(plot_width=700, plot_height=500, tools=[hover, PanTool(), 
-                                                       ResetTool(), 
-                                                       BoxZoomTool(), 
-                                                       WheelZoomTool()],
-                                                 title=str(year_i+1+periodos))
-    
-    ### PLoteo cada conjunto
-    for i in range(k):
-        source = ColumnDataSource(data={'x':list_x[np.where(etiquetas==i)], 
-                                        'y':list_y[np.where(etiquetas==i)], 
-                                        'xv':list_xv[np.where(etiquetas==i)], 
-                                        'yv': list_yv[np.where(etiquetas==i)],
-                                        'pais':list_pais[np.where(etiquetas==i)],
-                                        'grados_p':grados_pertenencia[np.where(etiquetas==i)],
-                                        'cluster_id':etiquetas[np.where(etiquetas==i)]})
-        p.circle('x','y', size=12, 
-                 fill_color=colores[i], source=source)
-
-    
-    ### Veo cuales cambiaron de cluster
-    etiquetas_cambios = np.where(etiquetas_prev-etiquetas != 0)
-    etiqs = etiquetas[etiquetas_cambios]
-
-    ### PLoteo los elementos de cada conjunto que cambiaron de cluster
-    
-    ### Listas para los elementos que cambiaron de cluster
-    X_data_cambios = X_data_pca[etiquetas_cambios]
-    list_x = X_data_cambios[:,0]
-    list_y = X_data_cambios[:,1]
-    list_xv = cambios_variables[:,0]
-    list_yv = cambios_variables[:,1]
-    list_pais = list_pais[etiquetas_cambios]
-    grados_pertenencia = grados_pertenencia[etiquetas_cambios]
-
-    ## Plotear elementos que cambiaron de cluster
-    for i in range(k):
-        source = ColumnDataSource(data={'x':list_x[np.where(etiqs==i)], 'y':list_y[np.where(etiqs==i)], 'xv':list_xv[np.where(etiqs==i)], 'yv': list_yv[np.where(etiqs==i)],'pais':list_pais[np.where(etiqs==i)],'grados_p':grados_pertenencia[np.where(etiqs==i)],'cluster_id':etiqs[np.where(etiqs==i)]})
-        p.square('x','y', size=6, 
-                 fill_color='white', source=source)
-
-
-
-    ### Ploteo centroides
-    
-    ### Listas para centroiodes
-    cambios_centroids = centroids_viej - centroids
-    list_x = centroids_pca[:,0]
-    list_y = centroids_pca[:,1]
-    list_xv = cambios_centroids[:,0]
-    list_yv = cambios_centroids[:,1]
-
-    # Plotar centroids    
-    source = ColumnDataSource(data={'x':list_x, 'y':list_y, 'xv':list_xv, 'yv': list_yv})
-#    p.square('x','y', size=15,             fill_color='black',source=source)
-    
-    ### Labels de la grafica (componentes principales)
-    p.xaxis.axis_label = 'Componente principal 1'
-    p.yaxis.axis_label = 'Componente principal 2'
-    #p.xaxis.axis_label = datos.columns[-2]
-    #p.yaxis.axis_label = datos.columns[-1]
+    title = str(year_i+1+periodos)           
     
     
-    ### Guardar resultados
-    output_file('outputs/ClustersGenerados/cluster'+str(year_i+1+periodos)+'.html')
-    save(p)
-
-               
+    funciones.plot_cluster_bokeh_cambios(X_data_pca, list_x, list_y, list_xv, list_yv, k, 
+                               cambios_variables, list_pais, grados_pertenencia, 
+                               etiquetas, etiquetas_prev, centroids, 
+                               centroids_viej, centroids_pca, title = title,
+                               to_save = True)   
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
 
 ########################### NUEVA VISUALIZACION  ##############################
 
