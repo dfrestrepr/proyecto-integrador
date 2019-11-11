@@ -247,15 +247,23 @@ def kmeans(X_data,k,numiter,centroids,p_dista = 2,etiquetas = [], shrinkage = Tr
             ### Asigno el elemento a este cluster
             etiquetas[element] = nearest_centroid
             
-            ### Grados de pertenencia a cada cluster
-            grados_pert = str(list(np.around(1/(distc/sum(distc))/sum(1/(distc/sum(distc))),4)))
-            grados_pertenencia.append(grados_pert)
-
             
             ### Recalculo el centroide 
             centroids[nearest_centroid] = np.mean(X_data[np.where(etiquetas==nearest_centroid)], axis=0)   
         
         centroids = np.array(centroids)
+
+
+    ### Guardar grados de pertenencia a cada cluster
+    for element in range(numdata):
+        ### Evaluo las distancias a cada centroides
+        ### le sumo 0.00001 a cada distancia para evitar division sobre cero
+        distc = []
+        for c in centroids:
+            distc.append(distancia(X_data[element], c, p_dista,covariance_matrix)+0.00001)        
+        grados_pert = list(np.around(1/(distc/sum(distc))/sum(1/(distc/sum(distc))),4))
+        grados_pertenencia.append(grados_pert)
+
     logger.info('Fin del algoritmo kmeans')
     return grados_pertenencia,etiquetas,centroids
 
