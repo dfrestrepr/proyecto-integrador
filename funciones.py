@@ -44,7 +44,7 @@ def outlier_detection_mahal(X,alpha = 0.95):
         cutoff = np.quantile(dist,alpha)
         outliers = (dist>cutoff).astype(int)
     except Exception as e:
-        logger.info(f'Error en la deteccion de outliers:{e}')
+        logger.info('Error en la deteccion de outliers:{0}'.format(e))
     
     logger.info('Deteccion de outliers exitoso')
     return outliers
@@ -70,7 +70,7 @@ def stepwise_logistic(X,Y,alpha =0.1):
         model = sm.Logit(Y, X).fit()
         variables_relevantes = list(X.columns) 
     except Exception as e:
-        logger.info(f'Error en el stepwise logistic:{e}')
+        logger.info('Error en el stepwise logistic:{0}'.format(e))
         model = None
         variables_relevantes = []
         
@@ -91,7 +91,7 @@ def variables_relevantes_arbol(X,Y,alpha = None):
     
     if alpha == None:
         alpha = 1.0/len(features)
-        logger.info(f'Se calcula el valor minimo de aceptacion de importancia: {alpha}')
+        logger.info('Se calcula el valor minimo de aceptacion de importancia: {0}'.format(alpha))
     
     try:    
         model = ExtraTreeClassifier()
@@ -105,7 +105,7 @@ def variables_relevantes_arbol(X,Y,alpha = None):
                 relevant_features.append(features[i])
                 
     except Exception as e:
-        logger.info(f'Error con el metodo de arboles, no se determinaron variables relevantes: {e}')
+        logger.info('Error con el metodo de arboles, no se determinaron variables relevantes: {0}'.format(e))
         relevant_features = []
         
     return importance
@@ -158,7 +158,7 @@ def data_preprocessing(datos, alpha_outlier_detection =0.95, columns_not_numeric
                 X_aux = X_aux.drop(columns = var_names[var_m])
                 
                 to_drop.append(var_names[var_m])
-                logger.info(f'Se elimina la variable:var_names[var_m] con el umbral: {r_sqr_threshold}')
+                logger.info('Se elimina la variable:var_names[var_m] con el umbral: {0}'.format(r_sqr_threshold))
                 
             else:
                 break
@@ -198,12 +198,12 @@ def distancia(a,b, p, cov = np.array([])):
 ### Inicializa los centroides para el metodo de kmeans, inicializa de forma
 ### aleatoria tantos centros como clusters
 def init_centroids(X_data,k):
-    logger.info(f'Inicializacion de {k} centroides para el metodo de kmeans')
+    logger.info('Inicializacion de {0} centroides para el metodo de kmeans'.format(k))
     centroids = []
     numdata = len(X_data)
     for i in range(k):
         centroids.append(X_data[np.random.randint(0, numdata)])
-        
+
     return centroids
 
 ### Metodo de kmeans
@@ -229,7 +229,7 @@ def kmeans(X_data,k,numiter,centroids,p_dista = 2,etiquetas = [], shrinkage = Tr
         
     ### Ahora empiezo las iteraciones
     for it in range(numiter):
-        logger.info(f'Iteracion {it} de {numiter} para el metodo de kmeans')
+        logger.info('Iteracion {0} de {1} para el metodo de kmeans'.format(it, numiter))
         ### En cada iteracion, itero para todos los elementos
         for element in range(numdata):
             
