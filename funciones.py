@@ -624,7 +624,7 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
         items_son=[]
         bo = 0
         for a in strings_legends[pos]:
-            color_ =  list(etiquetas_glo[pos]).index(co)
+            color_ =  list(etiquetas_glo[pos]).index(bo)
             items_son.append(LegendItem(label=a, renderers=[r], index=color_))
             bo=bo+1
         legend.items = items_son
