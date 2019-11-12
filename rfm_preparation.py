@@ -6,7 +6,7 @@ from datetime import timedelta
 import seaborn as sb
 import funciones as fn
 
-matplotlib.use('TkAgg')
+matplotlib.use('Qt5Agg')
 plt.rcParams['figure.figsize'] = (16, 9)
 plt.style.use('ggplot')
 
