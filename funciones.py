@@ -415,11 +415,27 @@ def plot_cluster_bokeh_cambios(X_data_pca, list_x, list_y, list_xv, list_yv, k,
     
     return None
 
+
+
+
+
+
+
+
+
+
+### Para ploteo de datos con estilo de gapminder
 def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
-                         etiquetas_glo, periodos_incluir, k,
+                         etiquetas_glo, periodos_incluir, k, imp_periods_var,
+                         centroids_ite, scaler_es,
                          title = 'Titulo',
                          xlabel='Eje x',
                          ylabel='Eje y'):
+    
+    
+
+    
+    
     
     ### Lista years
     years_plot = []
@@ -482,6 +498,9 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
     ### regions list seria el "nombre " de cada cluster (top variables mas importantes)
     
     
+    
+    
+    ### Consolidar data
     df = pd.concat({'Componente_1': pca1,
                     'Componente_2': pca2,
                     'Grado_Pertenencia': grados_pert},
@@ -501,18 +520,65 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
     
     
     source = ColumnDataSource(data=data[years_plot[0]])
+
+
+
+
+    ############### Para las labels ########################
     
-    plot = figure(title=title, plot_height=450, plot_width = 900)
+    #### Numero de variables a plotear
+    num_v_plot = 4
+    
+    #### Nombres variables
+    nomb_v = datos_e.columns[2:]
+    
+    #### Desestandarizar centroides
+    centroids_ito = scaler_es.inverse_transform(centroids_ite)
+    
+    #### Consolidar strings de las legends de cada iteracion
+    strings_legends = []
+    c=0
+    for y in years_plot:
+        esta_iter = []
+        estas_imp = imp_periods_var[c]
+        cc = 0
+        for clu in estas_imp:
+            ### Variables mas importantes
+            orden_v = np.argsort(clu)[::-1][:num_v_plot]
+            
+            ### Construir string
+            stri = ''
+            
+            ### Numero observaciones cluster
+            stri = stri + 'Num_obs: '+str(len(np.where(etiquetas_glo[c]==cc)[0])) +', '
+            
+            ### Variables importantes
+            for i in orden_v:
+                stri = stri+nomb_v[i][:12]+': ' + str(np.around(centroids_ito[c][cc][i],2))+', '
+            stri=stri[:-2]
+            esta_iter.append(stri)
+            cc=cc+1
+        strings_legends.append(esta_iter)
+        c=c+1
+
+
+
+    #### PLoteos    
+    global plot
+    plot = figure(title=title, y_range=(-5, 7), plot_height=520, plot_width = 900)
     plot.xaxis.ticker = SingleIntervalTicker(interval=1)
     plot.xaxis.axis_label = xlabel
     plot.yaxis.ticker = SingleIntervalTicker(interval=20)
     plot.yaxis.axis_label = ylabel
     
+
     label = Label(x=1.1, y=18, text=str(years_plot[0]), text_font_size='70pt', text_color='#eeeeee')
     plot.add_layout(label)
     
     color_mapper = CategoricalColorMapper(palette=Spectral6, factors=regions_list)
-    plot.circle(
+    global r
+    
+    r = plot.circle(
         x='Componente_1',
         y='Componente_2',
         size='Grado_Pertenencia',
@@ -522,8 +588,24 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
         line_color='#7c7e71',
         line_width=0.5,
         line_alpha=0.5,
-    #    legend_group='region',
+#        legend_group='region',
     )
+    
+    from bokeh.models import Legend, LegendItem
+    
+    global legend   
+    
+    items_son=[]
+    co = 0
+    for a in strings_legends[0]:
+        color_ =  list(etiquetas_glo[0]).index(co)
+        items_son.append(LegendItem(label=a, renderers=[r], index=color_))
+        co=co+1
+        
+    legend = Legend(items=items_son)
+    plot.add_layout(legend)    
+    
+
     plot.add_tools(HoverTool(tooltips="@country", show_arrow=False, point_policy='follow_mouse'))    
 
 
@@ -538,7 +620,23 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
         year = slider.value
         label.text = str(year)
         source.data = data[year]
+        pos = years_plot.index(year)
+        global legend
+        global r
+        global plot
+
     
+        items_son=[]
+        bo = 0
+        for a in strings_legends[pos]:
+            color_ =  list(etiquetas_glo[pos]).index(bo)
+            items_son.append(LegendItem(label=a, renderers=[r], index=color_))
+            bo=bo+1
+        legend.items = items_son
+        plot.add_layout(legend)   
+        
+
+        
     slider = Slider(start=years_plot[0], end=years_plot[-1], value=years_plot[0], step=1, title="Year")
     slider.on_change('value', slider_update)
     
@@ -548,7 +646,7 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
         global callback_id
         if button.label == '► Play':
             button.label = '❚❚ Pause'
-            callback_id = curdoc().add_periodic_callback(animate_update, 200)
+            callback_id = curdoc().add_periodic_callback(animate_update, 1000)
         else:
             button.label = '► Play'
             curdoc().remove_periodic_callback(callback_id)

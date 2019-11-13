@@ -37,17 +37,21 @@ logger.info('Inicia ejecucion del programa')
 ### Leemos los datos 
 datos = pd.read_csv('outputs/data_gapminder_proc.csv')
 
-### Por ahora, dejamos solo nombre pais y year, y dos variables explicativas
+### Variables a usar 
 datos = datos[datos.columns[[0,1,3,4,5,6]]]  
 
+### Nombres variables
+nomb_vars = datos.columns[2:]
 
+#### Preprocesamiento de datos
 datos = funciones.data_preprocessing(datos, alpha_outlier_detection =0.98, 
                                      columns_not_numeric = {'country','Date'},
                                      column_id = 'country')
 
 ### Estandarizo todos los datos
 datos_e = datos.copy()
-datos_e[datos_e.columns[2:]] = StandardScaler().fit_transform(datos_e[datos_e.columns[2:]])
+scaler_es = StandardScaler()
+datos_e[datos_e.columns[2:]] = scaler_es.fit_transform(datos_e[datos_e.columns[2:]])
 datos_e = datos_e.fillna(0)
 
 #### Aplicarle PCA a todos los datos
@@ -59,11 +63,14 @@ datos_pca = pca.fit_transform(datos_e[datos_e.columns[2:]])
 np.random.seed(1)
 
 ##### Inicio tomando los del primer year
-year_i = 2012   ### Year inicial a considerar
+year_i = 2000   ### Year inicial a considerar
 filtro = datos_e['Date']==year_i
 X_data_df = datos_e[filtro].reset_index(drop=True)
 X_data = np.array(X_data_df[X_data_df.columns[2:]])
 
+
+### Numero de periodos que incluire en el estudio, sin incluir el inicial
+periodos_incluir = 17
 
 ### Los que usare para el PCA seran
 X_data_pca = np.array(datos_pca[filtro])
@@ -75,6 +82,11 @@ grad_per = []
 ### Lista donde ire guardando las etiquetas asignadas del cluster
 etiquetas_glo = []
 
+### Lista donde ire guardando las variables mas importantes por cluster y por periodo
+imp_periods_var = []
+
+### Lista donde ire guardando los centroides de cada iteracion
+centroids_ite = []
 
 
 ## Numero de observaciones en cada periodo
@@ -108,6 +120,8 @@ grad_per.append(grados_pertenencia.copy())
 ### Guardo etiquetas
 etiquetas_glo.append(etiquetas.copy())
 
+### Guardo centroids
+centroids_ite.append(centroids.copy())
 
 ### Variable global donde ire guardando la importancia de las variables en cada 
 ### iteracion
@@ -141,12 +155,15 @@ imp_clus_prom =  np.mean(importancias_cluster, axis=0)
 imp_iters.append(imp_clus_prom)
 
 
+### Guardo importancias generales (para el plot)
+imp_periods_var.append(importancias_cluster)
+
+
 ###############################################################################
 ################## Ahora, empiezo a iterar para t >=2 #########################
 ###############################################################################
 
-### Numero de periodos que incluire en el estudio, sin incluir el inicial
-periodos_incluir = 4
+
 
 for periodos in range(periodos_incluir):
     
@@ -219,6 +236,38 @@ for periodos in range(periodos_incluir):
     
     ### Guardo etiquetas
     etiquetas_glo.append(etiquetas.copy())
+    
+    ### Guardo centroids
+    centroids_ite.append(centroids.copy())
+
+
+
+    ###### Esta importancia la necesito para los labels
+    ### Obtener la importancia de las variables de cada cluster (de mayor a menor)
+    importancias_cluster = []
+    ### Para cada cluster
+    for clu in range(k):
+        ### Dejo solo las observaciones de cada cluster
+        datax_i = pd.DataFrame(X_data_pond)
+        datay_i = etiquetas.copy()
+        
+        #### Solo clasifico binario si si pertence o no a cada cluster
+        distintos_cluster = np.where(datay_i!=clu)
+        
+        ### Lo que no pertenece al cluster, lo pongo en -1
+        datay_i[distintos_cluster] = -1
+        datay_i = pd.DataFrame(datay_i)
+        
+        ### Calcular relevancias
+        relevancias, _ = funciones.variables_relevantes_arbol(datax_i, datay_i, 0)
+        
+        importancias_cluster.append(relevancias)
+
+    ### Guardo importancias generales (para el plot)
+    imp_periods_var.append(importancias_cluster)
+
+
+
 
     ###########################################################################
     ################ K means para la seleccion de variables ###################
@@ -258,12 +307,14 @@ for periodos in range(periodos_incluir):
     ### Guardo las importancias de esta iteracion
     imp_iters.append(imp_clus_prom)
 
+
 ###############################################################################
 ########################### NUEVA VISUALIZACION  ##############################
 ###############################################################################
 
 funciones.gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
-                         etiquetas_glo, periodos_incluir, k,
+                         etiquetas_glo, periodos_incluir, k, imp_periods_var,
+                         centroids_ite, scaler_es,
                          title = 'Gapminder data',
                          xlabel='Componente principal 1',
                          ylabel='Componente principal 2')
