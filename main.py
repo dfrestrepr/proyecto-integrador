@@ -63,11 +63,14 @@ datos_pca = pca.fit_transform(datos_e[datos_e.columns[2:]])
 np.random.seed(1)
 
 ##### Inicio tomando los del primer year
-year_i = 2012   ### Year inicial a considerar
+year_i = 2000   ### Year inicial a considerar
 filtro = datos_e['Date']==year_i
 X_data_df = datos_e[filtro].reset_index(drop=True)
 X_data = np.array(X_data_df[X_data_df.columns[2:]])
 
+
+### Numero de periodos que incluire en el estudio, sin incluir el inicial
+periodos_incluir = 17
 
 ### Los que usare para el PCA seran
 X_data_pca = np.array(datos_pca[filtro])
@@ -160,8 +163,7 @@ imp_periods_var.append(importancias_cluster)
 ################## Ahora, empiezo a iterar para t >=2 #########################
 ###############################################################################
 
-### Numero de periodos que incluire en el estudio, sin incluir el inicial
-periodos_incluir = 4
+
 
 for periodos in range(periodos_incluir):
     

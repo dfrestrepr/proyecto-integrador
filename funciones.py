@@ -549,6 +549,10 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
             ### Construir string
             stri = ''
             
+            ### Numero observaciones cluster
+            stri = stri + 'Num_obs: '+str(len(np.where(etiquetas_glo[c]==cc)[0])) +', '
+            
+            ### Variables importantes
             for i in orden_v:
                 stri = stri+nomb_v[i][:12]+': ' + str(np.around(centroids_ito[c][cc][i],2))+', '
             stri=stri[:-2]
@@ -561,12 +565,13 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
 
     #### PLoteos    
     global plot
-    plot = figure(title=title, y_range=(-3, 5), plot_height=520, plot_width = 900)
+    plot = figure(title=title, y_range=(-5, 7), plot_height=520, plot_width = 900)
     plot.xaxis.ticker = SingleIntervalTicker(interval=1)
     plot.xaxis.axis_label = xlabel
     plot.yaxis.ticker = SingleIntervalTicker(interval=20)
     plot.yaxis.axis_label = ylabel
     
+
     label = Label(x=1.1, y=18, text=str(years_plot[0]), text_font_size='70pt', text_color='#eeeeee')
     plot.add_layout(label)
     
@@ -641,7 +646,7 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
         global callback_id
         if button.label == '► Play':
             button.label = '❚❚ Pause'
-            callback_id = curdoc().add_periodic_callback(animate_update, 200)
+            callback_id = curdoc().add_periodic_callback(animate_update, 1000)
         else:
             button.label = '► Play'
             curdoc().remove_periodic_callback(callback_id)
