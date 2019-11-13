@@ -214,7 +214,7 @@ def init_centroids(X_data,k):
     return centroids
 
 ### Metodo de kmeans
-def kmeans(X_data,numiter,centroids,p_dista = 2,etiquetas = [], shrinkage = True):
+def kmeans(X_data,numiter,centroids,p_dista = 2,etiquetas = [], shrinkage = False):
     logger.info('Inicializa el metodo de kmeans')
     numdata = len(X_data)    
     if len(etiquetas)==0:

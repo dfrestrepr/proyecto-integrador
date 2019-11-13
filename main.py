@@ -35,18 +35,18 @@ logger.info('Inicia ejecucion del programa')
 #### Version propia de kmeans para proyecto integrador
 
 ### Leemos los datos 
-datos = pd.read_csv('outputs/data_gapminder_proc.csv')
+#datos = pd.read_csv('outputs/data_gapminder_proc1.csv')
 
-#datos = pd.read_csv('outputs/data_gapminder_proc2.csv')
+datos = pd.read_csv('outputs/data_gapminder_proc2.csv')
 
 ### Variables a usar 
-datos = datos[datos.columns[[0,1,3,4,5,6]]]  
+datos = datos[datos.columns[:]]  
 
 ### Nombres variables
 nomb_vars = datos.columns[2:]
 
 #### Preprocesamiento de datos
-datos = funciones.data_preprocessing(datos, alpha_outlier_detection =0.98, 
+datos = funciones.data_preprocessing(datos, alpha_outlier_detection =0.96, 
                                      columns_not_numeric = {'country','Date'},
                                      column_id = 'country')
 
@@ -65,14 +65,14 @@ datos_pca = pca.fit_transform(datos_e[datos_e.columns[2:]])
 np.random.seed(1)
 
 ##### Inicio tomando los del primer year
-year_i = 2000   ### Year inicial a considerar
+year_i = min(datos_e['Date'])   ### Year inicial a considerar
 filtro = datos_e['Date']==year_i
 X_data_df = datos_e[filtro].reset_index(drop=True)
 X_data = np.array(X_data_df[X_data_df.columns[2:]])
 
 
 ### Numero de periodos que incluire en el estudio, sin incluir el inicial
-periodos_incluir = 17
+periodos_incluir = max(datos_e['Date']) - min(datos_e['Date']) - 1
 
 ### Los que usare para el PCA seran
 X_data_pca = np.array(datos_pca[filtro])
@@ -97,9 +97,9 @@ numdata = len(X_data)
 
 ### Define cantidad de clusters, numero maximo de iteraciones, y la distancia
 ### que se utilizara en el metodo de kmeans
-k = 4
+k = 3
 numiter = 5
-p_dista = 2
+p_dista = 2   ### 0 para mahalanobis
 
 
 #### Inicializar los centroides
@@ -206,7 +206,7 @@ for periodos in range(periodos_incluir):
         cont= cont+1
 
     #### Usar rankings o usar los promedios para el peso
-    peso_variables = importancia_prom.copy()
+    peso_variables = importancia_prom.copy()*100  ### Escalarlos con 100 para reducir errores numericos
 
     
     ### Escalo entonces la X para cambiar los pesos (segun las importancias)
@@ -239,8 +239,8 @@ for periodos in range(periodos_incluir):
     ### Guardo etiquetas
     etiquetas_glo.append(etiquetas.copy())
     
-    ### Guardo centroids
-    centroids_ite.append(centroids.copy())
+    ### Guardo centroids (con los valores originales sin ponderar)
+    centroids_ite.append(centroids.copy()* (1/peso_variables))
 
 
 
