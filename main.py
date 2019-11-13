@@ -37,6 +37,8 @@ logger.info('Inicia ejecucion del programa')
 ### Leemos los datos 
 datos = pd.read_csv('outputs/data_gapminder_proc.csv')
 
+#datos = pd.read_csv('outputs/data_gapminder_proc2.csv')
+
 ### Variables a usar 
 datos = datos[datos.columns[[0,1,3,4,5,6]]]  
 
