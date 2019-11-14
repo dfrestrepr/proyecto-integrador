@@ -48,7 +48,8 @@ nomb_vars = datos.columns[2:]
 #### Preprocesamiento de datos
 datos = funciones.data_preprocessing(datos, alpha_outlier_detection =0.96, 
                                      columns_not_numeric = {'country','Date'},
-                                     column_id = 'country')
+                                     column_id = 'country', 
+                                     shrinkage = False)
 
 ### Estandarizo todos los datos
 datos_e = datos.copy()

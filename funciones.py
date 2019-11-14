@@ -24,12 +24,24 @@ from bokeh.models import (ColumnDataSource, HoverTool, BoxZoomTool,
 logger = logging.getLogger(__name__)
 #%%
 
+### Esta funcion calcula la matriz de covarianza de Ledoit and Wolf, retorna
+### la matriz de covarianza despues de aplicar el metodo de Shrinkage, ademas
+### de retornar la media estimada. Esta funcion toma como parametros de entrada
+### el conjunto de datos
+def LedoitWolf_covMatrix(X):
+    logger.info('Se realiza el calculo de la matriz de covarianza con Shrinkage')
+    cov = LedoitWolf().fit(X)
+    cov_matrix = cov.covariance_
+    mean_vector = cov.location_
+    
+    return cov_matrix, mean_vector
+
 ### La funcion toma como entrada el conjunto de datos en el cual se desea
 ### realizar la deteccion de outliers multivariante. El metodo utiliza la
 ### distancia de Mahalanobis y la matriz de covarianza habitual. Se define
 ### alpha como el percentil en el cual se realizara el corte de la matriz de 
 ### distancias para determinar que registros son considerados outliers. 
-def outlier_detection_mahal(X,alpha = 0.95):
+def outlier_detection_mahal(X,alpha = 0.95, shrinkage = False):
     logger.info('Comienza la deteccion de outliers')
     if len(X)==0:
         logger.info('No hay datos para realizar deteccion de outliers')
@@ -38,7 +50,13 @@ def outlier_detection_mahal(X,alpha = 0.95):
         X = np.array(X)
         X_arr = np.array(X)
         X_mean = X_arr.mean(axis = 0)
-        cov = np.array(pd.DataFrame(X).cov())
+        
+        if shrinkage:
+            cov, _ = LedoitWolf_covMatrix(X)
+        else:
+            cov = np.array(pd.DataFrame(X).cov())
+        
+        
         inv_cov = np.linalg.inv(cov)
         
         dist = []
@@ -125,12 +143,14 @@ def variables_relevantes_arbol(X,Y,alpha = None):
 ### variables redundantes en el conjunto de datos mirando la relacion lineal
 ### de una variable contra todas las demas
 def data_preprocessing(datos, alpha_outlier_detection =0.95, columns_not_numeric = {}, 
-                       column_id = '', remove_vars = True, r_sqr_threshold = 0.9):
+                       column_id = '', remove_vars = True, r_sqr_threshold = 0.9, shrinkage = False):
     
     ### Realiza la identificaciohn de outliers usando la distancia de 
     ### Mahalanobis
     logger.info('Realiza deteccion de outlier en el preprocesamiento de los datos')
-    outliers = outlier_detection_mahal(datos.drop(columns = columns_not_numeric),alpha = alpha_outlier_detection)
+    outliers = outlier_detection_mahal(datos.drop(columns = columns_not_numeric),
+                                       alpha = alpha_outlier_detection,
+                                       shrinkage = shrinkage)
     
     ### En caso que no exista una columna identificadora para eliminar IDs
     ### outliers, se eliminan todos los registros que se encontraron como
@@ -173,19 +193,6 @@ def data_preprocessing(datos, alpha_outlier_detection =0.95, columns_not_numeric
     datos = datos.drop(columns = to_drop)
     logger.info('Fin del preprocesamiento de los datos eliminando Outliers y variables redundantes')
     return datos
-
-
-### Esta funcion calcula la matriz de covarianza de Ledoit and Wolf, retorna
-### la matriz de covarianza despues de aplicar el metodo de Shrinkage, ademas
-### de retornar la media estimada. Esta funcion toma como parametros de entrada
-### el conjunto de datos
-def LedoitWolf_covMatrix(X):
-    logger.info('Se realiza el calculo de la matriz de covarianza con Shrinkage')
-    cov = LedoitWolf().fit(X)
-    cov_matrix = cov.covariance_
-    mean_vector = cov.location_
-    
-    return cov_matrix, mean_vector
 
 
 ### Funcion de distancia p, tenga en cuenta que si p es cero, entonces se
