@@ -5,10 +5,8 @@ import matplotlib.pyplot as plt
 from datetime import timedelta
 import seaborn as sb
 import funciones as fn
-#matplotlib.use('Qt5Agg')
 
-from mpl_toolkits.mplot3d import Axes3D
-
+matplotlib.use('Qt5Agg')
 plt.rcParams['figure.figsize'] = (16, 9)
 plt.style.use('ggplot')
 
@@ -16,15 +14,17 @@ PATH = '/home/david/Descargas/SEG_DYN.csv'
 
 df = pd.read_csv(PATH, sep="|", parse_dates=[2,27])
 df = df.replace('\\N', np.nan )
+#project.profiler_documentation(df, 'SEG_DYN')
 
 data=df[['CUST_CODE','TKT_VALUE','TKT_QTY','ORDER_DATE']].copy()
-
-data.to_csv('/home/datos.csv', sep="~")
-data.columns = ['cliente', 'precio_total', 'cantidad', 'fecha']
+data.columns = ['cliente', 'precio', 'cantidad', 'fecha']
 data.info()
 data.describe()
 data.hist()
 #plt.show()
+
+total = data['cantidad'] * data['precio']
+data['precio_total'] = total
 data['ano'] = data.fecha.dt.year
 
 
@@ -46,39 +46,31 @@ rfm = rfm.rename(columns={'precio_total': 'monetary',
                             'fecha': 'recency',
                             'cantidad': 'frequency'})
 
-
 rfm.describe()
 rfm.hist()
-# estandarizci+on de variables
 
-def estandar_rfm(df_rfm):
-    df_list= list()
-    for item in df_rfm.ano.unique():
-        filtro = df_rfm[df_rfm['ano'] == item].copy()
-        filtro.recency = filtro.recency.apply(lambda x: (filtro.recency.max()-x)/(filtro.recency.max()-filtro.recency.min()))
-        filtro.monetary = filtro.monetary.apply(lambda x: (x-filtro.monetary.min())/(filtro.monetary.max()-filtro.monetary.min()))
-        filtro.frequency = filtro.frequency.apply(lambda x: (x-filtro.frequency.min())/(filtro.frequency.max()-filtro.frequency.min()))
-        df_list.append(filtro)
-    estandar = pd.concat(df_list)
-    return estandar
+df_list= list()
+for item in rfm.ano.unique():
+    filtro = rfm[rfm['ano'] == item].copy()
+    filtro.recency = filtro.recency.apply(lambda x: (filtro.recency.max()-x)/(filtro.recency.max()-filtro.recency.min()))
+    filtro.monetary = filtro.monetary.apply(lambda x: (x-filtro.monetary.min())/(filtro.monetary.max()-filtro.monetary.min()))
+    filtro.frequency = filtro.frequency.apply(lambda x: (x-filtro.frequency.min())/(filtro.frequency.max()-filtro.frequency.min()))
+    df_list.append(filtro)
 
-rfm = estandar_rfm(rfm)
+rfm = pd.concat(df_list)
 
 #plt.show()
 
-outlier= fn.outlier_detection_mahal(rfm.drop(['ano', 'cliente'], axis=1), 0.7)
+outlier= fn.outlier_detection_mahal(rfm.drop(['ano', 'cliente'], axis=1), 0.8)
 index = np.where(outlier==1)[0]
 rfm = rfm.drop(rfm.index[index])
-rfm = estandar_rfm(rfm)
-
 ############ CALCULO DEL RFM: esto se puede mejor para no usar quintiles si no otra medida de distancia
-rfm['r_quartile'] = pd.qcut(rfm['recency'], 5, [1,2,3,4,5]).astype(str)
-rfm['f_quartile'] = pd.qcut(rfm['frequency'], 5, [1,2,3,4,5]).astype(str)
-rfm['m_quartile'] = pd.qcut(rfm['monetary'], 5, [1,2,3,4,5]).astype(str)
+rfm['r_quartile'] = pd.qcut(rfm['recency'], 5, [1,2,3,4,5]).astype(int)
+rfm['f_quartile'] = pd.qcut(rfm['frequency'], 5, [1,2,3,4,5]).astype(int)
+rfm['m_quartile'] = pd.qcut(rfm['monetary'], 5, [1,2,3,4,5]).astype(int)
 rfm['rfm'] = rfm.r_quartile + rfm.f_quartile + rfm.m_quartile
 rfm['rfm'] = rfm['rfm'].astype(int)
-#rfm['etiquetas'] = etiquetas
-#rfm.rfm = rfm.rfm.apply(lambda x: (x-rfm.rfm.min())/(rfm.rfm.max()-rfm.rfm.min()))
+rfm.rfm = rfm.rfm.apply(lambda x: (x-rfm.rfm.min())/(rfm.rfm.max()-rfm.rfm.min()))
 
 
 rfm = rfm[['cliente','ano','recency','frequency','monetary']]
@@ -93,7 +85,6 @@ datos2019 = rfm[rfm.ano==2019]
 datosm = pd.merge(datos2017, datos2018, how='inner', on='cliente')
 datosm = pd.merge(datosm, datos2019, how='inner', on='cliente')
 rfm = rfm[rfm['cliente'].isin(datosm['cliente'])]
-
 
 datos_e = rfm
 from sklearn.decomposition import PCA
@@ -122,7 +113,7 @@ numdata = len(X_data)
 
 ### Define cantidad de clusters, numero maximo de iteraciones, y la distancia
 ### que se utilizara en el metodo de kmeans
-k = 5
+k = 4
 numiter = 10
 p_dista = 2
 
@@ -135,7 +126,7 @@ centroids_p = centroids.copy()
 
 ### Aplicar kmeans
 grados_pertenencia, etiquetas, centroids = fn.kmeans(X_data, k, numiter,
-                                                            centroids)
+                                                            centroids, p_dista=p_dista)
 
 ### Variable global donde ire guardando la importancia de las variables en cada
 ### iteracion
@@ -193,7 +184,7 @@ p = figure(plot_width=700, plot_height=500, tools=[hover, PanTool(), ResetTool()
 ### PLoteo cada cluster
 for i in range(k):
     source = ColumnDataSource(data={'x': list_x[np.where(etiquetas == i)], 'y': list_y[np.where(etiquetas == i)],
-                                    'cliente': list_pais[np.where(etiquetas == i)],
+                                    'pais': list_pais[np.where(etiquetas == i)],
                                     'grados_p': grados_pertenencia[np.where(etiquetas == i)],
                                     'cluster_id': etiquetas[np.where(etiquetas == i)]})
     p.circle('x', 'y', size=12,
@@ -212,35 +203,6 @@ p.yaxis.axis_label = 'Componente principal 2'
 ### Guardo el resultado
 output_file('/home/david/proyecto-integrador/outputs/rfm_' + str(year_i) + '.html')
 save(p)
-
-labels = etiquetas
-X = np.array(X_data)
-
-fig = plt.figure()
-ax = Axes3D(fig)
-colores= list(np.random.choice(range(256), size=len(y)))
-ax.scatter(X[:, 0], X[:, 1], X[:, 2], s=60)
-plt.show()
-
-# centroides
-C =centroids
-colores = ['red', 'green', 'blue','yellow', 'grey']
-
-#colores = list(np.random.choice(range(256), size=len(centroids)))
-
-# colores para cluster
-asignar = []
-for row in labels:
-    asignar.append(colores[int(row)])
-
-fig = plt.figure()
-ax = Axes3D(fig)
-ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=asignar, s=60)
-ax.scatter(C[:, 0], C[:, 1], C[:, 2], marker='*', c='red', s=200)
-ax.set_xlabel("Recency")
-ax.set_ylabel("Monetary")
-ax.set_zlabel("Frecuenty")
-plt.show()
 
 #################### Ahora, empiezo a iterar para t >=2
 
@@ -415,4 +377,3 @@ for periodos in range(periodos_incluir):
     ### Guardar resultados
     output_file('/home/david/proyecto-integrador/outputs/rfm_' + str(year_i + 1 + periodos) + '.html')
     save(p)
-
