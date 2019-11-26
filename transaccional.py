@@ -4,7 +4,7 @@ import funcionesv2 as fn
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-PATH = '/home/david/Descargas/SEG_DYN.csv'
+PATH = r"C:\Users\nicol\Documents\Mis_documentos\MaestriaCienciaDatos\Semestre1\ProyectoIntegrador\Data\SEG_DYN.csv"
 
 df = pd.read_csv(PATH, sep="|", parse_dates=[2,27])
 df = df.replace('\\N', np.nan )
@@ -89,7 +89,7 @@ datos = fn.data_preprocessing(df, alpha_outlier_detection =0.98,
                                      shrinkage = False)
 """
 # deteccion outlayer
-outlier= fn.outlier_detection_mahal(df.drop(['periodo', 'cliente'], axis=1), 0.7)
+outlier= fn.outlier_detection_mahal(df.drop(['periodo', 'cliente'], axis=1), 0.95)
 index = np.where(outlier==1)[0]
 df_out = df.iloc[index].cliente.unique()
 df = df[~df.cliente.isin(df_out)]
@@ -156,7 +156,7 @@ numdata = len(X_data)
 
 ### Define cantidad de clusters, numero maximo de iteraciones, y la distancia
 ### que se utilizara en el metodo de kmeans
-k = 3
+k = 4
 numiter = 5
 p_dista = 2   ### 0 para mahalanobis
 
@@ -354,7 +354,7 @@ for periodos in periodos_incluir:
 fn.gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
                                etiquetas_glo, periodos_totales, k, imp_periods_var,
                                centroids_ite, scaler_es,
-                               title='Gapminder data',
+                               title='2017-Q1',
                                xlabel='Componente principal 1',
                                ylabel='Componente principal 2')
 
