@@ -427,16 +427,11 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
                          title = 'Titulo',
                          xlabel='Eje x',
                          ylabel='Eje y'):
-    
-    
 
-    
-    
-    
     ### Lista years
     years_plot = []
-    for o in range(periodos_incluir+1):
-        years_plot.append(year_i + o)
+    for o in periodos_incluir:
+        years_plot.append(o)
         
     ### Dataframes necesarias
     pca1 = pd.DataFrame(columns = years_plot)
@@ -444,7 +439,7 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
     
     ### PCA de cada year
     for year in years_plot:
-        filtro = datos_e['Date']==year
+        filtro = datos_e['periodo']==year
         
         ### Los que usare para el PCA seran
         X_data_pca_y = np.array(datos_pca[filtro])
@@ -453,8 +448,8 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
         pca2[year] =  X_data_pca_y[:,1]
     
     ### Nombres de los individuos
-    pca1.index = X_data_df.country
-    pca2.index = X_data_df.country
+    pca1.index = X_data_df.cliente
+    pca2.index = X_data_df.cliente
     
     ### Grados de pertenencia
     grados_pert = pd.DataFrame(columns = years_plot)
@@ -465,7 +460,7 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
     for year in years_plot:    
         grados_pert[year] =  np.max(grad_per[coun], axis=1)*40  ### Aumento escala para que se vean bien
         coun = coun+1
-    grados_pert.index = X_data_df.country
+    grados_pert.index = X_data_df.cliente
     
      
     ##### Cluster al que pertenece cada dato en cada periodo de tiempo
@@ -474,7 +469,7 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
     for year in years_plot:
         eti = pd.DataFrame()
         eti['region'] = [str(i)[0] for i in list(etiquetas_glo[couu])] ### Solo 1 caracter
-        eti.index = X_data_df.country
+        eti.index = X_data_df.cliente
         
         etiqs_plot.append(eti)
         couu = couu+1
@@ -602,7 +597,7 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
     plot.add_layout(legend)    
     
 
-    plot.add_tools(HoverTool(tooltips="@country", show_arrow=False, point_policy='follow_mouse'))    
+    plot.add_tools(HoverTool(tooltips="@cliente", show_arrow=False, point_policy='follow_mouse'))
 
 
     def animate_update():
@@ -633,7 +628,7 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
         
 
         
-    slider = Slider(start=years_plot[0], end=years_plot[-1], value=years_plot[0], step=1, title="Year")
+    slider = Slider(start=years_plot[0], end=years_plot[-1], value=years_plot[0], step=1, title="periodo")
     slider.on_change('value', slider_update)
     
     callback_id = None
