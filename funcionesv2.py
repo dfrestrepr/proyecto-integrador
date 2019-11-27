@@ -126,11 +126,13 @@ def variables_relevantes_arbol(X,Y,alpha = None):
 ### de una variable contra todas las demas
 def data_preprocessing(datos, alpha_outlier_detection =0.95, columns_not_numeric = {}, 
                        column_id = '', remove_vars = True, r_sqr_threshold = 0.9):
-    
-    ### Realiza la identificaciohn de outliers usando la distancia de 
+
+    ### Realiza la identificaciohn de outliers usando la distancia de
     ### Mahalanobis
     logger.info('Realiza deteccion de outlier en el preprocesamiento de los datos')
-    outliers = outlier_detection_mahal(datos.drop(columns = columns_not_numeric),alpha = alpha_outlier_detection)
+    outliers = outlier_detection_mahal(datos.drop(columns = columns_not_numeric),
+                                       alpha = alpha_outlier_detection,
+                                      )
     
     ### En caso que no exista una columna identificadora para eliminar IDs
     ### outliers, se eliminan todos los registros que se encontraron como
@@ -197,7 +199,6 @@ def distancia(a,b, p, cov = np.array([])):
         dist = distance.mahalanobis(a, b, inv_cov)
     else:
         dist = np.linalg.norm(a-b, p) 
-    
 
     return dist
 
