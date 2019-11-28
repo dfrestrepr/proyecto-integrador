@@ -602,20 +602,24 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
 
 
     def animate_update():
-        year = slider.value + 1
+        global plot
+        posi = (int(slider.value) + 1) % len(years_plot)   ### En este ejemplo, q no pase de 12
+        year = years_plot[posi]
+        plot.title.text = str(year)[:].replace('.','-Q')
         if year > years_plot[-1]:
             year = years_plot[0]
-        slider.value = year
+        slider.value = posi
     
     
     def slider_update(attrname, old, new):
-        year = slider.value
+        year = years_plot[int(slider.value)]
         label.text = str(year)
         source.data = data[year]
         pos = years_plot.index(year)
         global legend
         global r
         global plot
+        plot.title.text = str(year)[:].replace('.','-Q')
 
     
         items_son=[]
@@ -629,7 +633,7 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
         
 
         
-    slider = Slider(start=years_plot[0], end=years_plot[-1], value=years_plot[0], step=1, title="periodo")
+    slider = Slider(start=0, end=11, value=0, step=1, title="periodo")
     slider.on_change('value', slider_update)
     
     callback_id = None
@@ -653,6 +657,6 @@ def gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
     
     
     curdoc().add_root(layout_plot)
-    curdoc().title = "Gapminder"
+    curdoc().title = "Transactional"
 
     return None
