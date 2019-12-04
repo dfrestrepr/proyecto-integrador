@@ -16,3 +16,6 @@ logs/*
 Archivos Pablo/*
 
 Ejemp_pyspark.ipynb
+Ejemp_pyspark_v4.ipynb
+
+datosspark/*.ini
