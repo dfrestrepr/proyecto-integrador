@@ -7,11 +7,34 @@ donde se ejecute este comando se debe tener acceso a python (puede ser
 en un ambiente de python, o usarlo directamente si se tiene instalado 
 python en el PATH del computador). 
 
+***********************************************************************
+Crear ambiente de Anaconda para el proyecto a partir de archivo yml:
+
+En el anaconda prompt, navegar hasta la carpeta donde se encuentra el
+archivo "SegmentacionDinamica.yml" y ejecutar el comando:
+
+conda env create -f SegmentacionDinamica.yml
+
+***********************************************************************
 
 - Para ejecutar la segementación dinámica con datos de Gapminder usando 
 nuestro k-means de Python, sería necesario ejecutar en una linea de comandos 
 ubicada actualmente en la carpeta "proyecto-integrador" el comando 
 "bokeh serve main.py --show" el cual se encuentra en el archivo 'Ejecutar_gapminder.bat'. 
+
+Para realizar esa ejecucion, desde el anaconda prompt, activamos el ambiente 
+de segmentacion dinamica con el comando:
+
+conda activate segmentacion-dinamica
+
+Posteriormente desde el anaconda prompt con el ambiente activo, se navega 
+hasta la carpeta donde se encuentra el archivo Ejecutar_gapminder.bat, luego
+directamente se ejecuta el archivo con el comando:
+
+Ejecutar_gapminder.bat
+
+Esto cargara el localhost en el cual se realizara la visualizacion de la solucion
+del metodo
 
 
 - Para ejecutar la segementación dinámica con datos de Gapminder usando 
@@ -26,6 +49,8 @@ en la carpeta "datosspark", se puede usar el comando
 "bokeh serve visualizar_spark.py --show" (el cual se encuentra en el archivo 
 'Visualizar_pyspark_gapminder.bat') para generar la visualización. 
 
+Para realizar esta ejecucion, repetimos los pasos utilizados para correr el
+archivo Ejecutar_gapminder.bat, solo  cambiando el nombre del archivo por Visualizar_pyspark_gapminder.bat
 
 - Para la segmentación dinámica con datos reales usando nuestro k-means de Python, 
 no hemos subido aquí los datos necesarios para ejecutarla debido a temas de 
