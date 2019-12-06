@@ -1,0 +1,19 @@
+name: segmentacion-dinamica
+channels:
+ - conda-forge
+dependencies:
+ - python=3.7
+ - numpy
+ - pandas
+ - seaborn
+ - scikit-learn
+ - spyder
+ - jupyter
+ - bokeh
+ - statsmodels
+ - scipy
+ - tabulate
+ - imbalanced-learn
+ - pip
+ - pip:
+    - tabulate
