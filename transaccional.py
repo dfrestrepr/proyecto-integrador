@@ -6,6 +6,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import seaborn as sb
 
+### Lectura de datos reales (este archivo lo tenemos de forma local)
 PATH = '/home/david/Descargas/SEG_DYN.csv'
 variables = ['precio_total', 'cantidad', 'frecuencia','CEMENT_QTY', 'C_FLYASH_QTY', 'CEMENTITIOUS_QTY',
          'COARSE_QTY', 'SAND_QTY', 'ADMIXTURE_QTY']

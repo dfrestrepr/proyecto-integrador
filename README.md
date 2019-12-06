@@ -23,3 +23,8 @@
 
  # Despliegue (puesta en producción)
  Finalmente, se pondrá en producción el modelo resultando usando algunas de las tenoclogías actuales de almacenmaiento y procesamiento en la nube.
+
+ 
+ 
+ 
+ 

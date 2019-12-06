@@ -1,0 +1,15 @@
+Para ejecutar los scripts:
+
+
+Para que funcionen correctamente los comandos de los visualizadores, tener en cuenta que bokeh es una librería de python y desde la terminal donde se ejecute este comando se debe tener acceso a python (puede ser en un ambiente de python, o usarlo directamente si se tiene instalado python en el PATH del computador). 
+
+
+- Para ejecutar la segementación dinámica con datos de Gapminder usando nuestro k-means de Python, sería necesario ejecutar en una linea de comandos ubicada actualmente en la carpeta "proyecto-integrador" el comando "bokeh serve main.py --show" el cual se encuentra en el archivo 'Ejecutar_gapminder.bat'. 
+
+
+- Para ejecutar la segementación dinámica con datos de Gapminder usando nuestro la implementación de pyspark.ml de kmeans, sería necesario correr el notebook llamado "Ejemplo_pyspark_final.ipynb", ya que este notebook genera los .csv con los distintos reusltados de salida que usará el visualizador (este requiere usar pyspark, nosotros pudimos usarlo tanto con nuestras instalaciones locales de Pyspark como con Pyspark en un cluster de Azure databricks). 
+Luego de generar estos resultados y de que queden guardados los .csv generados en la carpeta "datosspark", se puede usar el comando "bokeh serve visualizar_spark.py --show" (el cual se encuentra en el archivo 'Visualizar_pyspark_gapminder.bat') para generar la visualización. 
+
+
+
+- Para la segmentación dinámica con datos reales usando nuestro k-means de Python, no hemos subido aquí los datos necesarios para ejecutarla debido a temas de confidencialidad. Sin embargo, si quedan en este github los distintos codigos que se usaron para la ejecución y visualización usando nosotros los datos (los datos estaban en un archivo llamado "SEG_DYN.csv" que nosotros teníamos de forma local). Para usar el programa, nosotros lo que hacíamos era ejecutar en una linea de comandos ubicada actualmente en la carpeta "proyecto-integrador" el comando "bokeh serve transaccional.py --show" el cual se encuentra en el archivo 'Ejecutar_datos_reales.bat'. 

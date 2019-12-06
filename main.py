@@ -35,8 +35,6 @@ logger.info('Inicia ejecucion del programa')
 #### Version propia de kmeans para proyecto integrador
 
 ### Leemos los datos 
-#datos = pd.read_csv('outputs/data_gapminder_proc1.csv')
-
 datos = pd.read_csv('outputs/data_gapminder_proc2.csv')
 
 ### Variables a usar 
@@ -73,7 +71,7 @@ X_data = np.array(X_data_df[X_data_df.columns[2:]])
 
 
 ### Numero de periodos que incluire en el estudio, sin incluir el inicial
-periodos_incluir = max(datos_e['Date']) - min(datos_e['Date']) - 1
+periodos_incluir = max(datos_e['Date']) - min(datos_e['Date'])
 
 ### Los que usare para el PCA seran
 X_data_pca = np.array(datos_pca[filtro])
