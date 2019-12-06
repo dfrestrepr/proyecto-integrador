@@ -14,7 +14,7 @@ import numpy as np
 ################# Correr parte inicial para crear algunas variables
 
 from sklearn.preprocessing import StandardScaler
-datos = pd.read_csv('outputs/data_gapminder_proc2.csv')
+datos = pd.read_csv('data/data_gapminder_proc2.csv')
 ### Variables a usar 
 datos = datos[datos.columns[:]]  
 #### Preprocesamiento de datos

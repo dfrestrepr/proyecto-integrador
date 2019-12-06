@@ -35,7 +35,7 @@ logger.info('Inicia ejecucion del programa')
 #### Version propia de kmeans para proyecto integrador
 
 ### Leemos los datos 
-datos = pd.read_csv('outputs/data_gapminder_proc2.csv')
+datos = pd.read_csv('data/data_gapminder_proc2.csv')
 
 ### Variables a usar 
 datos = datos[datos.columns[:]]  
@@ -320,8 +320,50 @@ funciones.gapminder_plot_bokeh(datos_e, datos_pca, year_i, X_data_df, grad_per,
                          xlabel='Componente principal 1',
                          ylabel='Componente principal 2')
 
-#    
-#from bokeh.plotting import output_file, save
-#output_file("test.html")
-#save(layout)
-#
+
+						 
+						 
+
+
+
+
+						 
+#### Guardar tablas en formato csv con los distintos resultados hallados por la segmentacion dinamica
+df1= pd.DataFrame(datos_e)
+df1.reset_index().to_csv('salidas/datos_e.csv',header=True,index= False)
+
+df2= pd.DataFrame(datos_pca)
+df2.reset_index().to_csv('salidas/datos_pca.csv',header=True,index= False)
+
+df3= pd.DataFrame(X_data_df)
+df3.reset_index().to_csv('salidas/X_data_df.csv',header=True,index= False)
+
+df4= pd.DataFrame(grad_per)
+df4.reset_index().to_csv('salidas/grad_per.csv',header=True,index= False)
+
+df5= pd.DataFrame(etiquetas_glo)
+df5.reset_index().to_csv('salidas/etiquetas_glo.csv',header=True,index= False)
+
+df6= pd.DataFrame(imp_periods_var)
+df6.reset_index().to_csv('salidas/imp_periods_var.csv',header=True,index= False)
+
+#Los siquientes parámetros son números sin estructura de dataframe
+
+dsimple = pd.DataFrame(columns=('year_i', 'k', 'periodos_incluir', 'scaler_es','dim_centroids_ite'))
+
+dimension = np.array(centroids_ite).shape
+largo = dimension[2]*dimension[1]
+
+dsimple.loc[len(dsimple)] = [ year_i, k, periodos_incluir,scaler_es,dimension]
+df7= pd.DataFrame(dsimple)
+df7.reset_index().to_csv('salidas/yeari_k_periods_scaler_es_dimcentroi.csv',header=True,index= False)
+
+centros = np.array(centroids_ite).reshape(largo,-1)
+df8= pd.DataFrame(centros)
+df8.reset_index().to_csv('salidas/centroids_ite.csv',header=True,index= False)
+
+datos = pd.DataFrame(datos_pca, columns=['component_1', 'component_2'])
+datos = pd.concat([datos_e, datos], axis=1, ignore_index=True)
+from tabulate import tabulate
+print(tabulate(datos, headers='keys', tablefmt="psql"))
+datos.to_csv('salidas/datos.csv', header = True, index= False)
