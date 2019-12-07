@@ -31,7 +31,7 @@ datos_e[datos_e.columns[2:]] = scaler_es.fit_transform(datos_e[datos_e.columns[2
 
 #### De aqui necesitaba scaler_es. ademas uso
 year_i = 1980
-periodos_incluir = 29
+periodos_incluir = 30
 k = 3
 
 
