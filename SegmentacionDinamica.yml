@@ -3,17 +3,16 @@ channels:
  - conda-forge
 dependencies:
  - python=3.7
- - numpy
- - pandas
- - seaborn
- - scikit-learn
- - spyder
+ - numpy=1.16.2
+ - pandas=0.24.1
+ - seaborn=0.9.0
+ - scikit-learn=0.20.2
+ - spyder=3.3.6
  - jupyter
- - bokeh
- - statsmodels
- - scipy
- - tabulate
+ - bokeh=1.4.0
+ - statsmodels=0.10.0
+ - scipy=1.2.1
  - imbalanced-learn
- - pip
+ - pip=19.2.3
  - pip:
-    - tabulate
+    - tabulate=0.8.3
